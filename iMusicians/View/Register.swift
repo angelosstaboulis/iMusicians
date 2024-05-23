@@ -44,10 +44,6 @@ struct Register: View {
                         TextField("Enter your Password", text: $company.password).frame(width:200,alignment: .leading)
                     }.padding(27)
                     VStack{
-                        Text("Address").frame(width:200,alignment: .leading)
-                        TextField("Enter your Company Address", text: $company.address).frame(width:200,alignment: .leading)
-                    }.padding(27)
-                    VStack{
                         Text("Town").frame(width:200,alignment: .leading)
                         TextField("Enter your Company Town", text: $company.town).frame(width:200,alignment: .leading)
                     }.padding(27)
