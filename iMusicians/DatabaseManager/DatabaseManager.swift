@@ -8,10 +8,7 @@
 import Foundation
 import SQLite
 class DatabaseInit{
-    static let shared = DatabaseInit()
-    private init(){}
-    
-    func initDB() -> Connection{
+    func createConnection() -> Connection{
         let path = Bundle.main.resourcePath!
         
         let sourcePath = "\(path)/iMusiciansDB.db"
@@ -38,10 +35,10 @@ class DatabaseInit{
     }
 }
 class DataFetcher{
-    func fetchUsers() -> [Users] {
+    func fetchUsers(connection:DatabaseInit) -> [Users] {
         var users:[Users] = []
         do{
-            for record in try DatabaseInit.shared.initDB().prepare("SELECT * FROM users"){
+            for record in try connection.createConnection().prepare("SELECT * FROM users"){
                 guard let userID = record[0] else {
                     return []
                 }
@@ -72,10 +69,10 @@ class DataFetcher{
         return users
     }
     
-    func fetchCompany() -> [Company] {
+    func fetchCompany(connection:DatabaseInit) -> [Company] {
         var company:[Company] = []
         do{
-            for record in try DatabaseInit.shared.initDB().prepare("SELECT * FROM company"){
+            for record in try connection.createConnection().prepare("SELECT * FROM company"){
                 guard let userID = record[0] else {
                     return []
                 }
@@ -115,7 +112,7 @@ class DataFetcher{
     
 }
 class DataManager{
-    func createUser(model:Users){
+    func createUser(connection:DatabaseInit,model:Users){
         do{
             let table = Table("Users")
             let id = Expression<Int64>("id")
@@ -126,12 +123,12 @@ class DataManager{
             let media = Expression<String>("media")
             let eventdate = Expression<String>("eventdate")
             let users = table.insert([id<-Int64.random(in: 1...100000),lastname<-model.lastname,firstname<-model.firstname,email<-model.email,town<-model.town,media<-model.media,eventdate<-model.eventdate])
-            try DatabaseInit.shared.initDB().run(users)
+            try connection.createConnection().run(users)
         }catch{
             debugPrint("something went wrong!!!!")
         }
     }
-    func createCompany(model:Company){
+    func createCompany(connection:DatabaseInit,model:Company){
         do{
             let table = Table("Company")
             let id = Expression<Int64>("id")
@@ -143,29 +140,30 @@ class DataManager{
             let email = Expression<String>("email")
             let password = Expression<String>("password")
             let company = table.insert([id<-Int64.random(in: 1...100000),name<-model.name,type<-model.type,fullname<-model.fullname,address<-model.address,town<-model.town,email<-model.email,password<-model.password])
-            try DatabaseInit.shared.initDB().run(company)
+            try connection.createConnection().run(company)
         }catch{
             debugPrint("something went wrong!!!!")
         }
     }
 }
 class DatabaseManager{
+    let connectionDB = DatabaseInit()
     let fetcher = DataFetcher()
     let manager = DataManager()
     static let shared = DatabaseManager()
     private init(){}
     func createUser(model:Users){
-        manager.createUser(model: model)
+        manager.createUser(connection: connectionDB, model: model)
     }
     func createCompany(model:Company){
-        manager.createCompany(model: model)
+        manager.createCompany(connection: connectionDB, model: model)
     }
     func fetchUsers()->[Users]{
-        return fetcher.fetchUsers()
+        return fetcher.fetchUsers(connection: connectionDB)
     }
     
     func fetchCompany()->[Company]{
-        return fetcher.fetchCompany()
+        return fetcher.fetchCompany(connection: connectionDB)
     }
     
 }
